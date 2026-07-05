@@ -1,0 +1,286 @@
+/* ============================================================
+   Stratagem Creator — styles
+   Screen: editing UI + A4 preview.  Print: clean two-column A4.
+   ============================================================ */
+
+:root {
+  --ui-bg: #1e2126;
+  --ui-panel: #2a2e35;
+  --ui-text: #e8e8e8;
+  --ui-muted: #9aa0a8;
+  --ui-border: #3a3f47;
+  --ui-accent: #4a90d9;
+
+  /* Card A4 metrics */
+  --page-w: 210mm;
+  --page-pad: 10mm;
+  --col-gap: 8mm;
+}
+
+/* ---- Colour themes (Red / Green / Blue) ---- */
+.theme-green { --c-main: #2f7d6e; --c-dark: #245f54; --c-soft: #e6f0ee; }
+.theme-red   { --c-main: #9c2b2e; --c-dark: #732023; --c-soft: #f4e6e6; }
+.theme-blue  { --c-main: #2f5e9e; --c-dark: #244875; --c-soft: #e6ecf4; }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font-family: "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;
+}
+
+/* ============================================================
+   Toolbar
+   ============================================================ */
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 20px;
+  background: var(--ui-panel);
+  border-bottom: 1px solid var(--ui-border);
+}
+.app-title { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: .5px; }
+.app-sub { color: var(--ui-muted); font-size: 12px; margin-left: 10px; }
+.toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--ui-border);
+  background: #343a42;
+  color: var(--ui-text);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.btn:hover { background: #3f4650; }
+.btn-primary { background: var(--ui-accent); border-color: var(--ui-accent); color: #fff; }
+.btn-primary:hover { background: #3a7fc4; }
+
+.empty-hint {
+  text-align: center;
+  color: var(--ui-muted);
+  margin: 40px auto;
+}
+
+/* ============================================================
+   Page (A4 sheet) — two columns
+   ============================================================ */
+.page {
+  width: var(--page-w);
+  min-height: 297mm;
+  margin: 24px auto;
+  padding: var(--page-pad);
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(0,0,0,.4);
+}
+
+.cards {
+  column-count: 2;
+  column-gap: var(--col-gap);
+}
+
+/* ============================================================
+   Card
+   ============================================================ */
+.card {
+  position: relative;
+  display: flex;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin: 0 0 6mm;
+  border: 1px solid #d8d8d8;
+  background: #fff;
+  color: #1b1b1b;
+  overflow: hidden;
+}
+
+/* Left colour rail — a narrow band with the CP diamond straddling it */
+.rail {
+  flex: 0 0 50px;
+  position: relative;
+  align-self: stretch;
+}
+/* the narrow coloured band */
+.rail::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 16px;
+  width: 16px;
+  background: var(--c-main);
+}
+
+.diamond {
+  width: 32px;
+  height: 32px;
+  transform: rotate(45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.diamond-inner { transform: rotate(-45deg); display: flex; align-items: baseline; justify-content: center; }
+/* CP diamond centred over the band, near the top */
+.diamond-cp {
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  z-index: 1;
+  background: #fff;
+  border: 2px solid var(--c-dark);
+}
+.cp-val { color: var(--c-main); font-weight: 800; font-size: 15px; line-height: 1; }
+.cp-unit { color: var(--c-main); font-weight: 800; font-size: 8px; line-height: 1; margin-left: 1px; }
+
+/* Body */
+.body {
+  flex: 1 1 auto;
+  padding: 8px 12px 10px;
+  min-width: 0;
+}
+
+.title {
+  color: var(--c-main);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  line-height: 1.05;
+}
+.subtitle {
+  color: #1b1b1b;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.lore {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #222;
+}
+
+.section {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #1b1b1b;
+}
+.section .label {
+  color: var(--c-main);
+  font-weight: 800;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  margin-right: 3px;
+}
+
+/* Rules / separators */
+.rule { height: 0; margin: 5px 0; }
+.rule-solid  { border-top: 2px solid var(--c-main); }
+.rule-dotted { border-top: 1.5px dotted #8a8a8a; }
+
+/* contenteditable placeholder */
+[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #b3b3b3;
+  font-style: normal;
+}
+.lore[contenteditable][data-placeholder]:empty::before { font-style: italic; }
+[contenteditable]:focus { outline: 2px solid rgba(74,144,217,.5); outline-offset: 2px; border-radius: 2px; }
+
+/* ============================================================
+   Per-card controls
+   ============================================================ */
+.card-controls {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.card:hover .card-controls,
+.card:focus-within .card-controls { opacity: 1; }
+
+.swatches { display: flex; gap: 4px; }
+.swatch {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #bbb;
+  cursor: pointer;
+  padding: 0;
+}
+.swatch.active { box-shadow: 0 0 0 2px #333; }
+.sw-red   { background: #9c2b2e; }
+.sw-green { background: #2f7d6e; }
+.sw-blue  { background: #2f5e9e; }
+
+.cp-control { font-size: 11px; color: #333; display: flex; align-items: center; gap: 4px; }
+.cp-input {
+  width: 42px;
+  padding: 2px 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.btn-remove {
+  border: 1px solid #d9a3a3;
+  background: #fbecec;
+  color: #9c2b2e;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.btn-remove:hover { background: #f6dede; }
+
+/* ============================================================
+   Print — clean A4, two columns, no UI
+   ============================================================ */
+@media print {
+  @page { size: A4; margin: 10mm; }
+
+  body { background: #fff; color: #000; }
+  .no-print { display: none !important; }
+
+  .page {
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .cards { column-count: 2; column-gap: var(--col-gap); }
+
+  .card { border: 1px solid #cfcfcf; }
+
+  /* Make theme colours print reliably */
+  .card, .rail, .diamond-icon, .diamond-cp {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  [contenteditable]:focus { outline: none; }
+}

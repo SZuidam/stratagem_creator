@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stratagem Creator — Warhammer 40,000</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Top toolbar (hidden when printing) -->
+  <header class="toolbar no-print">
+    <div class="toolbar-left">
+      <h1 class="app-title">Stratagem Creator</h1>
+      <span class="app-sub">Warhammer 40,000 — A4 two-column layout</span>
+    </div>
+    <div class="toolbar-actions">
+      <button id="addBtn" class="btn btn-primary" type="button">+ Add stratagem</button>
+      <button id="printBtn" class="btn" type="button">Print / Save as PDF</button>
+      <button id="exportBtn" class="btn" type="button">Export JSON</button>
+      <button id="importBtn" class="btn" type="button">Import JSON</button>
+      <input id="importFile" type="file" accept="application/json" hidden />
+    </div>
+  </header>
+
+  <!-- Printable page: cards flow into two columns on A4 -->
+  <main class="page" id="page">
+    <div class="cards" id="cards"></div>
+  </main>
+
+  <p class="empty-hint no-print" id="emptyHint" hidden>
+    No stratagems yet. Click <strong>+ Add stratagem</strong> to create one.
+  </p>
+
+  <!-- Template for a single stratagem card -->
+  <template id="cardTemplate">
+    <article class="card theme-green" data-id="">
+      <!-- Left colour rail with the CP diamond -->
+      <div class="rail">
+        <div class="diamond diamond-cp" title="Command points">
+          <span class="diamond-inner">
+            <span class="cp-val" data-field="cp">1</span><span class="cp-unit">CP</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Card body -->
+      <div class="body">
+        <div class="title" contenteditable="true" data-field="title"
+             data-placeholder="STRATAGEM NAME"></div>
+        <div class="rule rule-solid"></div>
+
+        <div class="subtitle" contenteditable="true" data-field="subtitle"
+             data-placeholder="FACTION — STRATAGEM TYPE"></div>
+        <div class="rule rule-dotted"></div>
+
+        <div class="lore" contenteditable="true" data-field="lore"
+             data-placeholder="Flavour / lore text in italics."></div>
+        <div class="rule rule-dotted"></div>
+
+        <p class="section">
+          <span class="label">WHEN:</span>
+          <span class="text" contenteditable="true" data-field="when"
+                data-placeholder="Describe when this stratagem can be used."></span>
+        </p>
+        <p class="section">
+          <span class="label">TARGET:</span>
+          <span class="text" contenteditable="true" data-field="target"
+                data-placeholder="Describe the target."></span>
+        </p>
+        <p class="section">
+          <span class="label">EFFECT:</span>
+          <span class="text" contenteditable="true" data-field="effect"
+                data-placeholder="Describe the effect."></span>
+        </p>
+        <div class="rule rule-dotted"></div>
+      </div>
+
+      <!-- Per-card controls (hidden when printing) -->
+      <div class="card-controls no-print">
+        <div class="swatches" role="group" aria-label="Card colour">
+          <button type="button" class="swatch sw-red"   data-color="red"   title="Red"></button>
+          <button type="button" class="swatch sw-green" data-color="green" title="Green"></button>
+          <button type="button" class="swatch sw-blue"  data-color="blue"  title="Blue"></button>
+        </div>
+        <label class="cp-control">CP
+          <input type="number" class="cp-input" min="0" max="9" step="1" value="1" />
+        </label>
+        <button type="button" class="btn-remove" title="Remove stratagem">Remove</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
