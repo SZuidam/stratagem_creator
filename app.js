@@ -8,6 +8,7 @@
   "use strict";
 
   var STORAGE_KEY = "stratagem-creator/v1";
+  var META_KEY = "stratagem-creator/meta/v1";
   var COLORS = ["red", "green", "blue"];
   var FIELDS = ["title", "subtitle", "lore", "when", "target", "effect"];
 
@@ -17,6 +18,8 @@
 
   /** @type {Array<Object>} in-memory model */
   var model = [];
+  /** @type {{detachment:string, image:string}} sheet header meta */
+  var meta = { detachment: "", image: "" };
   var idCounter = 1;
 
   /* ---------------- Sample / defaults ---------------- */
@@ -76,6 +79,31 @@
     return null;
   }
 
+  var metaSaveTimer = null;
+  function saveMeta() {
+    if (metaSaveTimer) clearTimeout(metaSaveTimer);
+    metaSaveTimer = setTimeout(function () {
+      try {
+        localStorage.setItem(META_KEY, JSON.stringify(meta));
+      } catch (e) {
+        console.warn("Could not save header to localStorage:", e);
+      }
+    }, 200);
+  }
+
+  function loadMeta() {
+    var raw = null;
+    try { raw = localStorage.getItem(META_KEY); } catch (e) { /* ignore */ }
+    if (!raw) return;
+    try {
+      var data = JSON.parse(raw);
+      if (data && typeof data === "object") {
+        meta.detachment = typeof data.detachment === "string" ? data.detachment : "";
+        meta.image = typeof data.image === "string" ? data.image : "";
+      }
+    } catch (e) { /* ignore */ }
+  }
+
   /* ---------------- Rendering ---------------- */
 
   function createCard(strat) {
@@ -130,6 +158,70 @@
     emptyHint.hidden = model.length > 0;
   }
 
+  /* ---------------- Detachment header ---------------- */
+
+  function renderHeader() {
+    var titleEl = document.querySelector('[data-field="detachment"]');
+    var img = document.getElementById("headerImg");
+    var removeBtn = document.getElementById("headerRemoveBtn");
+    var uploadBtn = document.getElementById("headerUploadBtn");
+
+    if (titleEl && titleEl.textContent !== meta.detachment) {
+      titleEl.textContent = meta.detachment;
+    }
+
+    if (meta.image) {
+      img.src = meta.image;
+      img.hidden = false;
+      removeBtn.hidden = false;
+      uploadBtn.textContent = "Change image";
+    } else {
+      img.removeAttribute("src");
+      img.hidden = true;
+      removeBtn.hidden = true;
+      uploadBtn.textContent = "Upload image";
+    }
+  }
+
+  function readHeaderImage(file) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      meta.image = String(reader.result);
+      renderHeader();
+      saveMeta();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function wireHeader() {
+    var titleEl = document.querySelector('[data-field="detachment"]');
+    if (titleEl) {
+      titleEl.addEventListener("input", function () {
+        meta.detachment = titleEl.textContent;
+        saveMeta();
+      });
+      titleEl.addEventListener("paste", function (e) {
+        e.preventDefault();
+        var text = (e.clipboardData || window.clipboardData).getData("text/plain");
+        document.execCommand("insertText", false, text);
+      });
+    }
+
+    var fileInput = document.getElementById("headerImageFile");
+    document.getElementById("headerUploadBtn").addEventListener("click", function () {
+      fileInput.click();
+    });
+    fileInput.addEventListener("change", function () {
+      if (fileInput.files && fileInput.files[0]) readHeaderImage(fileInput.files[0]);
+      fileInput.value = "";
+    });
+    document.getElementById("headerRemoveBtn").addEventListener("click", function () {
+      meta.image = "";
+      renderHeader();
+      saveMeta();
+    });
+  }
+
   /* ---------------- Card event wiring ---------------- */
 
   function wireCard(card) {
@@ -172,6 +264,8 @@
         if (!strat) return;
         var n = parseInt(cpInput.value, 10);
         if (isNaN(n) || n < 0) n = 0;
+        if (n > 5) n = 5;
+        if (String(n) !== cpInput.value) cpInput.value = String(n);
         strat.cp = n;
         if (cpVal) cpVal.textContent = String(n);
         save();
@@ -262,6 +356,10 @@
     } else {
       model = [sampleStratagem()];
     }
+
+    loadMeta();
+    renderHeader();
+    wireHeader();
     renderAll();
 
     document.getElementById("addBtn").addEventListener("click", addStratagem);

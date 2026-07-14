@@ -22,8 +22,27 @@
     </div>
   </header>
 
-  <!-- Printable page: cards flow into two columns on A4 -->
+  <!-- Printable page: header + cards flow into two columns on A4 -->
   <main class="page" id="page">
+    <!-- Detachment header: editable title + image centred between two lines -->
+    <header class="sheet-header">
+      <div class="detachment-title" contenteditable="true" data-field="detachment"
+           data-placeholder="DETACHMENT NAME"></div>
+
+      <div class="header-image-row">
+        <span class="hr-line"></span>
+        <div class="header-image" id="headerImage">
+          <img class="header-img" id="headerImg" alt="Detachment image" hidden />
+          <div class="header-image-controls no-print">
+            <button type="button" class="btn btn-small" id="headerUploadBtn">Upload image</button>
+            <button type="button" class="btn btn-small" id="headerRemoveBtn" hidden>Remove</button>
+          </div>
+        </div>
+        <span class="hr-line"></span>
+      </div>
+    </header>
+    <input id="headerImageFile" type="file" accept="image/*" hidden />
+
     <div class="cards" id="cards"></div>
   </main>
 
@@ -83,7 +102,7 @@
           <button type="button" class="swatch sw-blue"  data-color="blue"  title="Blue"></button>
         </div>
         <label class="cp-control">CP
-          <input type="number" class="cp-input" min="0" max="9" step="1" value="1" />
+          <input type="number" class="cp-input" min="0" max="5" step="1" value="1" />
         </label>
         <button type="button" class="btn-remove" title="Remove stratagem">Remove</button>
       </div>
