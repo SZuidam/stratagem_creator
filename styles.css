@@ -103,7 +103,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-top: 6px;
+  margin-top: 14px;
 }
 .hr-line {
   flex: 0 1 40mm;
@@ -112,11 +112,11 @@ body {
   border-top: 2px solid #1b1b1b;
 }
 .header-image {
+  position: relative;
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
   min-width: 120px;
   min-height: 24px;
 }
@@ -124,11 +124,42 @@ body {
   display: block;
   width: auto;
   height: auto;
-  max-width: 100mm;
-  max-height: 60px; /* ~three lines tall; aspect ratio preserved */
+  max-width: 50mm;
+  height: 40px; /* ~three lines tall; aspect ratio preserved */
 }
-.header-image-controls { display: flex; gap: 6px; }
-.btn-small { padding: 4px 10px; font-size: 12px; }
+
+/* Hover overlay icons in the top-right corner of the image */
+.header-edit-btn,
+.header-reset-btn {
+  position: absolute;
+  top: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  background: rgba(30, 33, 38, .9);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s, background .15s;
+}
+.header-edit-btn  { right: 2px; }
+.header-reset-btn { right: 30px; }
+.header-edit-btn:hover,
+.header-reset-btn:hover { background: var(--ui-accent); }
+
+.header-image:hover .header-edit-btn,
+.header-image:hover .header-reset-btn:not([hidden]),
+.header-edit-btn:focus-visible,
+.header-reset-btn:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
 
 .cards {
   column-count: 2;
@@ -156,27 +187,28 @@ body {
   position: relative;
   align-self: stretch;
 }
-/* the narrow coloured band */
+/* the narrow coloured band — starts at the CP diamond, flows down */
 .rail::before {
   content: "";
   position: absolute;
-  top: 0;
+  top: 32px;
   bottom: 0;
-  left: 16px;
+  left: 20px;
   width: 16px;
   background: var(--c-main);
 }
 
 .diamond {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   transform: rotate(45deg);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .diamond-inner { transform: rotate(-45deg); display: flex; align-items: baseline; justify-content: center; }
-/* CP diamond centred over the band, near the top */
+/* CP diamond centred over the band; its right corner aligns with the
+   solid rule beneath the title, and the ribbon starts from here. */
 .diamond-cp {
   position: absolute;
   top: 12px;
@@ -185,8 +217,8 @@ body {
   background: #fff;
   border: 2px solid var(--c-dark);
 }
-.cp-val { color: var(--c-main); font-weight: 800; font-size: 15px; line-height: 1; }
-.cp-unit { color: var(--c-main); font-weight: 800; font-size: 8px; line-height: 1; margin-left: 1px; }
+.cp-val { color: var(--c-main); font-weight: 800; font-size: 18px; line-height: 1; }
+.cp-unit { color: var(--c-main); font-weight: 800; font-size: 18px; line-height: 1; margin-left: 1px; }
 
 /* Body */
 .body {
