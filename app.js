@@ -11,6 +11,7 @@
   var META_KEY = "stratagem-creator/meta/v1";
   var COLORS = ["red", "green", "blue"];
   var FIELDS = ["title", "subtitle", "lore", "when", "target", "effect"];
+  var DEFAULT_IMAGE = "aquila.png";
 
   var cardsEl = document.getElementById("cards");
   var emptyHint = document.getElementById("emptyHint");
@@ -164,23 +165,15 @@
     var titleEl = document.querySelector('[data-field="detachment"]');
     var img = document.getElementById("headerImg");
     var removeBtn = document.getElementById("headerRemoveBtn");
-    var uploadBtn = document.getElementById("headerUploadBtn");
 
     if (titleEl && titleEl.textContent !== meta.detachment) {
       titleEl.textContent = meta.detachment;
     }
 
-    if (meta.image) {
-      img.src = meta.image;
-      img.hidden = false;
-      removeBtn.hidden = false;
-      uploadBtn.textContent = "Change image";
-    } else {
-      img.removeAttribute("src");
-      img.hidden = true;
-      removeBtn.hidden = true;
-      uploadBtn.textContent = "Upload image";
-    }
+    // Always show an image: the user's upload if present, otherwise the
+    // default Aquila. The reset button only appears once a custom image is set.
+    img.src = meta.image || DEFAULT_IMAGE;
+    removeBtn.hidden = !meta.image;
   }
 
   function readHeaderImage(file) {
@@ -269,6 +262,19 @@
         strat.cp = n;
         if (cpVal) cpVal.textContent = String(n);
         save();
+      });
+    }
+
+    // When the cursor leaves the controls, drop focus from any control inside
+    // them. Otherwise a clicked swatch/CP input keeps focus and the
+    // :focus-within rule would keep the pop-up visible after the mouse leaves.
+    var controls = card.querySelector(".card-controls");
+    if (controls) {
+      controls.addEventListener("mouseleave", function () {
+        if (controls.contains(document.activeElement) &&
+            typeof document.activeElement.blur === "function") {
+          document.activeElement.blur();
+        }
       });
     }
 

@@ -32,11 +32,21 @@
       <div class="header-image-row">
         <span class="hr-line"></span>
         <div class="header-image" id="headerImage">
-          <img class="header-img" id="headerImg" alt="Detachment image" hidden />
-          <div class="header-image-controls no-print">
-            <button type="button" class="btn btn-small" id="headerUploadBtn">Upload image</button>
-            <button type="button" class="btn btn-small" id="headerRemoveBtn" hidden>Remove</button>
-          </div>
+          <img class="header-img" id="headerImg" alt="Detachment image" />
+          <button type="button" class="header-edit-btn no-print" id="headerUploadBtn"
+                  title="Change image" aria-label="Change image">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path fill="currentColor"
+                    d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+            </svg>
+          </button>
+          <button type="button" class="header-reset-btn no-print" id="headerRemoveBtn"
+                  title="Reset to default image" aria-label="Reset to default image" hidden>
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path fill="currentColor"
+                    d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            </svg>
+          </button>
         </div>
         <span class="hr-line"></span>
       </div>
