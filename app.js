@@ -11,6 +11,8 @@
   var META_KEY = "stratagem-creator/meta/v1";
   var COLORS = ["red", "green", "blue"];
   var FIELDS = ["title", "subtitle", "lore", "when", "target", "effect"];
+  // Fields whose text may carry <b>...</b> emphasis (rendered as HTML).
+  var RICH_FIELDS = ["when", "target", "effect"];
   var DEFAULT_IMAGE = "aquila.png";
 
   var cardsEl = document.getElementById("cards");
@@ -19,8 +21,8 @@
 
   /** @type {Array<Object>} in-memory model */
   var model = [];
-  /** @type {{detachment:string, image:string}} sheet header meta */
-  var meta = { detachment: "", image: "" };
+  /** @type {{detachment:string, image:string, version:string}} sheet header meta */
+  var meta = { detachment: "", image: "", version: "" };
   var idCounter = 1;
 
   /* ---------------- Sample / defaults ---------------- */
@@ -101,11 +103,43 @@
       if (data && typeof data === "object") {
         meta.detachment = typeof data.detachment === "string" ? data.detachment : "";
         meta.image = typeof data.image === "string" ? data.image : "";
+        meta.version = typeof data.version === "string" ? data.version : "";
       }
     } catch (e) { /* ignore */ }
   }
 
   /* ---------------- Rendering ---------------- */
+
+  /* ---------------- Rich text (bold) helpers ----------------
+     Stored form is plain text that may contain <b>...</b> tags. Only <b> is
+     ever rendered; everything else is escaped, so field content stays safe. */
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  // Stored string -> safe HTML: escape all, then re-enable only <b>/</b>.
+  function boldToHtml(s) {
+    return escapeHtml(s || "")
+      .replace(/&lt;b&gt;/g, "<b>")
+      .replace(/&lt;\/b&gt;/g, "</b>");
+  }
+
+  function setField(el, s) { el.innerHTML = boldToHtml(s); }
+
+  // Edited contenteditable -> stored string: keep <b>, drop other markup.
+  function readField(el) {
+    var html = el.innerHTML
+      .replace(/<\s*(strong|b)(\s[^>]*)?>/gi, "<b>")
+      .replace(/<\s*\/\s*(strong|b)\s*>/gi, "</b>")
+      .replace(/<br\s*\/?>/gi, " ")
+      .replace(/<(?!\/?b\b)[^>]*>/gi, "");           // strip all non-<b> tags
+    return html
+      .replace(/&nbsp;/g, " ")
+      .replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"').replace(/&#0?39;/g, "'")
+      .replace(/&amp;/g, "&");
+  }
 
   function createCard(strat) {
     var frag = template.content.cloneNode(true);
@@ -117,7 +151,9 @@
     // Fill editable text fields
     FIELDS.forEach(function (field) {
       var el = card.querySelector('[data-field="' + field + '"]');
-      if (el) el.textContent = strat[field] || "";
+      if (!el) return;
+      if (RICH_FIELDS.indexOf(field) >= 0) setField(el, strat[field]);
+      else el.textContent = strat[field] || "";
     });
 
     // CP display + control
@@ -163,11 +199,15 @@
 
   function renderHeader() {
     var titleEl = document.querySelector('[data-field="detachment"]');
+    var versionEl = document.querySelector('[data-field="version"]');
     var img = document.getElementById("headerImg");
     var removeBtn = document.getElementById("headerRemoveBtn");
 
     if (titleEl && titleEl.textContent !== meta.detachment) {
       titleEl.textContent = meta.detachment;
+    }
+    if (versionEl && versionEl.textContent !== meta.version) {
+      versionEl.textContent = meta.version;
     }
 
     // Always show an image: the user's upload if present, otherwise the
@@ -200,6 +240,19 @@
       });
     }
 
+    var versionEl = document.querySelector('[data-field="version"]');
+    if (versionEl) {
+      versionEl.addEventListener("input", function () {
+        meta.version = versionEl.textContent;
+        saveMeta();
+      });
+      versionEl.addEventListener("paste", function (e) {
+        e.preventDefault();
+        var text = (e.clipboardData || window.clipboardData).getData("text/plain");
+        document.execCommand("insertText", false, text);
+      });
+    }
+
     var fileInput = document.getElementById("headerImageFile");
     document.getElementById("headerUploadBtn").addEventListener("click", function () {
       fileInput.click();
@@ -225,7 +278,8 @@
       el.addEventListener("input", function () {
         var strat = getStrat(id);
         if (!strat) return;
-        strat[el.dataset.field] = el.textContent;
+        var f = el.dataset.field;
+        strat[f] = RICH_FIELDS.indexOf(f) >= 0 ? readField(el) : el.textContent;
         save();
       });
       // Paste as plain text so formatting/markup never leaks in
@@ -308,7 +362,9 @@
   }
 
   function exportJSON() {
-    var blob = new Blob([JSON.stringify(model, null, 2)], { type: "application/json" });
+    // The version property is always present, even when empty.
+    var payload = { detachment: meta.detachment || "", version: meta.version || "", stratagems: model };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     var url = URL.createObjectURL(blob);
     var a = document.createElement("a");
     a.href = url;
@@ -324,8 +380,27 @@
     reader.onload = function () {
       try {
         var data = JSON.parse(String(reader.result));
-        if (!Array.isArray(data)) throw new Error("Expected a JSON array of stratagems.");
-        model = data.map(function (s) {
+        // Accept both the current object form ({ version, stratagems })
+        // and the legacy bare-array form.
+        var list = data;
+        if (data && !Array.isArray(data) && typeof data === "object") {
+          var headerChanged = false;
+          if (typeof data.detachment === "string") {
+            meta.detachment = data.detachment;
+            headerChanged = true;
+          }
+          if (typeof data.version === "string") {
+            meta.version = data.version;
+            headerChanged = true;
+          }
+          if (headerChanged) {
+            renderHeader();
+            saveMeta();
+          }
+          list = data.stratagems;
+        }
+        if (!Array.isArray(list)) throw new Error("Expected a JSON array of stratagems.");
+        model = list.map(function (s) {
           return {
             id: nextId(),
             color: COLORS.indexOf(s.color) >= 0 ? s.color : "green",
